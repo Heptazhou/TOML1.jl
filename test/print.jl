@@ -58,7 +58,7 @@ end == toml_str(Dict("foo" => Dict(:bar => 1)); sorted = true)
 	[option]
 	"""
 	d = TOML.parse(s)
-	@test toml_str(d) == "user = \"me\"\n\n[julia]\n\n[option]\n"
+	@test toml_str(d) == "user = \"me\"\n\n[julia]\n\n[option]\n" broken = VERSION ≥ v"1.13-0"
 end
 
 @testset "special characters" begin

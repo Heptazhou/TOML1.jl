@@ -5,7 +5,7 @@ using TOML1: TOML1
 
 makedocs(
 	modules = [TOML1],
-	sitename = "TOML1",
+	sitename = "TOML1.jl",
 	checkdocs = :strict,
 	doctest = true,
 	pages = [
@@ -13,4 +13,4 @@ makedocs(
 	],
 )
 
-deploydocs(repo = "github.com/Heptazhou/TOML1.jl.git")
+deploydocs(repo = "github.com/Heptazhou/TOML1.jl.git", devurl = "latest", forcepush = true)

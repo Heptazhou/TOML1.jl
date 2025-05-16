@@ -1,13 +1,14 @@
 # This file is a part of Julia. License is MIT: https://julialang.org/license
 
 """
-`Base.TOML` is an undocumented internal part of Julia's TOML parser
+`TOMLParser` is an undocumented internal part of Julia's TOML parser
 implementation.  Users should call the the documented interface in the
 TOML.jl standard library instead (by `import TOML` or `using TOML`).
 """
-module TOML
+module TOMLParser
 
 using Base: IdSet
+using Exts
 
 # we parse DateTime into these internal structs,
 # unless a different DateTime library is passed to the Parser constructor
@@ -83,10 +84,10 @@ mutable struct Parser{Dates}
 	root::TOMLDict
 
 	# Filled in in case we are parsing a file to improve error messages
-	filepath::Union{String, Nothing}
+	filepath::Maybe{String}
 
 	# Optionally populate with the Dates stdlib to change the type of Date types returned
-	Dates::Union{Module, Nothing} # TODO: remove once Pkg is updated
+	Dates::Maybe{Module} # TODO: remove once Pkg is updated
 end
 
 function Parser{Dates}(str::String; filepath = nothing) where Dates
@@ -128,7 +129,7 @@ Parser{Dates}(io::IO) where Dates = Parser{Dates}(read(io, String))
 
 # Parser(...) will be defined by TOML stdlib
 
-function reinit!(p::Parser, str::String; filepath::Union{Nothing, String} = nothing)
+function reinit!(p::Parser, str::String; filepath::Maybe{String} = nothing)
 	p.str = str
 	p.current_char = EOF_CHAR
 	p.pos = firstindex(str)
@@ -268,12 +269,12 @@ mutable struct ParserError <: Exception
 	data::Any
 
 	# These are filled in before returning from parse function
-	str      :: Union{String, Nothing}
-	filepath :: Union{String, Nothing}
-	line     :: Union{Int, Nothing}
-	column   :: Union{Int, Nothing}
-	pos      :: Union{Int, Nothing}      # position of parser when
-	table    :: Union{TOMLDict, Nothing} # result parsed until error
+	str      :: Maybe{String}
+	filepath :: Maybe{String}
+	line     :: Maybe{Int}
+	column   :: Maybe{Int}
+	pos      :: Maybe{Int}      # position of parser when
+	table    :: Maybe{TOMLDict} # result parsed until error
 end
 ParserError(type, data) = ParserError(type, data, nothing, nothing, nothing, nothing, nothing, nothing)
 ParserError(type) = ParserError(type, nothing)
@@ -529,7 +530,7 @@ function parse_table(l)
 	return
 end
 
-function parse_array_table(l)::Union{Nothing, ParserError}
+function parse_array_table(l)::Maybe{ParserError}
 	table_key = @try parse_key(l)
 	skip_ws(l)
 	if !(accept(l, ']') && accept(l, ']'))
@@ -553,7 +554,7 @@ function parse_array_table(l)::Union{Nothing, ParserError}
 	return
 end
 
-function parse_entry(l::Parser, d)::Union{Nothing, ParserError}
+function parse_entry(l::Parser, d)::Maybe{ParserError}
 	key = @try parse_key(l)
 	skip_ws(l)
 	if !accept(l, '=')
@@ -750,7 +751,7 @@ end
 parse_inf(l::Parser, sgn::Int) = accept(l, 'n') && accept(l, 'f') ? sgn * Inf : nothing
 parse_nan(l::Parser) = accept(l, 'a') && accept(l, 'n') ? NaN : nothing
 
-function parse_bool(l::Parser, v::Bool)::Union{Bool, Nothing}
+function parse_bool(l::Parser, v::Bool)::Maybe{Bool}
 	# Have eaten a 't' if `v` is true, otherwise have eaten a `f`.
 	v ? (accept(l, 'r') && accept(l, 'u') && accept(l, 'e') && return true) :
 	(accept(l, 'a') && accept(l, 'l') && accept(l, 's') && accept(l, 'e') && return false)

@@ -3,6 +3,7 @@
 using Test
 using Dates
 
+using Base: IdSet
 using TOML1: TOML1 as TOML, parse, tryparse, ParserError, Internals, print
 
 function roundtrip(data)
@@ -27,5 +28,5 @@ include("parse.jl")
 @inferred TOML.parse("foo = 3")
 
 @testset "Docstrings" begin
-	@test isempty(Docs.undocumented_names(TOML))
+	@test isempty(Docs.undocumented_names(TOML)) skip = VERSION ≤ v"1.11-0"
 end

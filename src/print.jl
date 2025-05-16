@@ -33,9 +33,9 @@ function print_toml_escaped(io::IO, s::AbstractString)
 	end
 end
 
-const MbyFunc = Union{Function, Nothing}
+const MbyFunc = Maybe{Function}
 const TOMLValue = Union{AbstractVector, AbstractDict, Bool, Integer, AbstractFloat, AbstractString,
-	Dates.DateTime, Dates.Time, Dates.Date, Base.TOML.DateTime, Base.TOML.Time, Base.TOML.Date}
+	Dates.DateTime, Dates.Time, Dates.Date, TOMLParser.DateTime, TOMLParser.Time, TOMLParser.Date}
 
 
 ########
@@ -91,9 +91,9 @@ end
 
 #! format: off
 function printvalue(f::MbyFunc, io::IO, value::TOMLValue, sorted::Bool)
-	value isa Base.TOML.DateTime && (value = Dates.DateTime(value))
-	value isa Base.TOML.Time && (value = Dates.Time(value))
-	value isa Base.TOML.Date && (value = Dates.Date(value))
+	value isa TOMLParser.DateTime && (value = Dates.DateTime(value))
+	value isa TOMLParser.Time && (value = Dates.Time(value))
+	value isa TOMLParser.Date && (value = Dates.Date(value))
 	value isa Dates.DateTime ? Base.print(io, Dates.format(value, Dates.dateformat"YYYY-mm-dd\THH:MM:SS.sss\Z")) :
 	value isa Dates.Time     ? Base.print(io, Dates.format(value, Dates.dateformat"HH:MM:SS.sss")) :
 	value isa Dates.Date     ? Base.print(io, Dates.format(value, Dates.dateformat"YYYY-mm-dd")) :

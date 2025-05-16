@@ -7,19 +7,25 @@ and to serialize Julia data structures to TOML format.
 """
 module TOML1
 
+include("toml_parser.jl")
+
 using Dates
+using Exts
 
 module Internals
 # The parser is defined in Base
-	using Base.TOML: Parser, parse, tryparse, ParserError, isvalid_barekey_char, reinit!
+	using ..TOMLParser: TOMLParser, Parser, parse, tryparse, ParserError, isvalid_barekey_char, reinit!
 	# Put the error instances in this module
-	for errtype in instances(Base.TOML.ErrorType)
-		@eval using Base.TOML: $(Symbol(errtype))
+	for errtype in instances(TOMLParser.ErrorType)
+		@eval using ..TOMLParser: $(Symbol(errtype))
 	end
 	# We put the printing functionality in a separate module since It
 	# defines a function `print` and we don't want that to collide with normal
 	# usage of `(Base.)print` in other files
 	module Printer
+		using ..TOMLParser: TOMLParser
+		using Base: IdSet
+		using Exts
 		include("print.jl")
 	end
 end
@@ -32,7 +38,7 @@ _readstring(f::AbstractString) = isfile(f) ? read(f, String) : error(repr(f), ":
 
 Constructor for a TOML `Parser`.  Note that in most cases one does not need to
 explicitly create a `Parser` but instead one directly use use
-[`TOML.parsefile`](@ref) or [`TOML.parse`](@ref).  Using an explicit parser
+[`TOML1.parsefile`](@ref) or [`TOML1.parse`](@ref).  Using an explicit parser
 will however reuse some internal data structures which can be beneficial for
 performance if a larger number of small files are parsed.
 """
@@ -52,7 +58,7 @@ Parser(str::String; filepath = nothing) = Parser(Internals.Parser{Dates}(str; fi
 Parse file `f` and return the resulting table (dictionary). Throw a
 [`ParserError`](@ref) upon failure.
 
-See also [`TOML.tryparsefile`](@ref).
+See also [`TOML1.tryparsefile`](@ref).
 """
 parsefile(f::AbstractString) =
 	Internals.parse(Internals.Parser{Dates}(_readstring(f); filepath = abspath(f)))
@@ -66,7 +72,7 @@ parsefile(p::Parser, f::AbstractString) =
 Parse file `f` and return the resulting table (dictionary). Return a
 [`ParserError`](@ref) upon failure.
 
-See also [`TOML.parsefile`](@ref).
+See also [`TOML1.parsefile`](@ref).
 """
 tryparsefile(f::AbstractString) =
 	Internals.tryparse(Internals.Parser{Dates}(_readstring(f); filepath = abspath(f)))
@@ -80,7 +86,7 @@ tryparsefile(p::Parser, f::AbstractString) =
 Parse the string  or stream `x`, and return the resulting table (dictionary).
 Throw a [`ParserError`](@ref) upon failure.
 
-See also [`TOML.tryparse`](@ref).
+See also [`TOML1.tryparse`](@ref).
 """
 parse(p::Parser) = Internals.parse(p._p)
 parse(str::AbstractString) =
@@ -97,7 +103,7 @@ parse(p::Parser, io::IO) = parse(p, read(io, String))
 Parse the string or stream `x`, and return the resulting table (dictionary).
 Return a [`ParserError`](@ref) upon failure.
 
-See also [`TOML.parse`](@ref).
+See also [`TOML1.parse`](@ref).
 """
 tryparse(p::Parser) = Internals.tryparse(p._p)
 tryparse(str::AbstractString) =
@@ -135,15 +141,15 @@ supported type.
 """
 const print = Internals.Printer.print
 
-public Parser, parsefile, tryparsefile, parse, tryparse, ParserError, print
+#public Parser, parsefile, tryparsefile, parse, tryparse, ParserError, print
 
 # These methods are private Base interfaces, but we do our best to support them over
 # the TOML stdlib types anyway to minimize downstream breakage.
-Base.TOMLCache(p::Parser) = Base.TOMLCache(p._p, Dict{String, Base.CachedTOMLDict}())
-Base.TOMLCache(p::Parser, d::Base.CachedTOMLDict) = Base.TOMLCache(p._p, d)
-Base.TOMLCache(p::Parser, d::Dict{String, Dict{String, Any}}) = Base.TOMLCache(p._p, d)
+#Base.TOMLCache(p::Parser) = Base.TOMLCache(p._p, Dict{String, Base.CachedTOMLDict}())
+#Base.TOMLCache(p::Parser, d::Base.CachedTOMLDict) = Base.TOMLCache(p._p, d)
+#Base.TOMLCache(p::Parser, d::Dict{String, Dict{String, Any}}) = Base.TOMLCache(p._p, d)
 
-Internals.reinit!(p::Parser, str::String; filepath::Union{Nothing, String} = nothing) = Internals.reinit!(p._p, str; filepath)
+Internals.reinit!(p::Parser, str::String; filepath::Maybe{String} = nothing) = Internals.reinit!(p._p, str; filepath)
 Internals.parse(p::Parser) = Internals.parse(p._p)
 Internals.tryparse(p::Parser) = Internals.tryparse(p._p)
 
