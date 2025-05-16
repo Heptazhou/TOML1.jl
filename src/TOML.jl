@@ -10,25 +10,25 @@ module TOML
 using Dates
 
 module Internals
-    # The parser is defined in Base
-    using Base.TOML: Parser, parse, tryparse, ParserError, isvalid_barekey_char, reinit!
-    # Put the error instances in this module
-    for errtype in instances(Base.TOML.ErrorType)
-        @eval using Base.TOML: $(Symbol(errtype))
-    end
-    # We put the printing functionality in a separate module since It
-    # defines a function `print` and we don't want that to collide with normal
-    # usage of `(Base.)print` in other files
-    module Printer
-        include("print.jl")
-    end
+# The parser is defined in Base
+	using Base.TOML: Parser, parse, tryparse, ParserError, isvalid_barekey_char, reinit!
+	# Put the error instances in this module
+	for errtype in instances(Base.TOML.ErrorType)
+		@eval using Base.TOML: $(Symbol(errtype))
+	end
+	# We put the printing functionality in a separate module since It
+	# defines a function `print` and we don't want that to collide with normal
+	# usage of `(Base.)print` in other files
+	module Printer
+		include("print.jl")
+	end
 end
 
 # https://github.com/JuliaLang/julia/issues/36605
 _readstring(f::AbstractString) = isfile(f) ? read(f, String) : error(repr(f), ": No such file")
 
 """
-    Parser()
+	Parser()
 
 Constructor for a TOML `Parser`.  Note that in most cases one does not need to
 explicitly create a `Parser` but instead one directly use use
@@ -37,17 +37,17 @@ will however reuse some internal data structures which can be beneficial for
 performance if a larger number of small files are parsed.
 """
 struct Parser
-    _p::Internals.Parser{Dates}
+	_p::Internals.Parser{Dates}
 end
 
 # Dates-enabled constructors
 Parser() = Parser(Internals.Parser{Dates}())
 Parser(io::IO) = Parser(Internals.Parser{Dates}(io))
-Parser(str::String; filepath=nothing) = Parser(Internals.Parser{Dates}(str; filepath))
+Parser(str::String; filepath = nothing) = Parser(Internals.Parser{Dates}(str; filepath))
 
 """
-    parsefile(f::AbstractString)
-    parsefile(p::Parser, f::AbstractString)
+	parsefile(f::AbstractString)
+	parsefile(p::Parser, f::AbstractString)
 
 Parse file `f` and return the resulting table (dictionary). Throw a
 [`ParserError`](@ref) upon failure.
@@ -55,13 +55,13 @@ Parse file `f` and return the resulting table (dictionary). Throw a
 See also [`TOML.tryparsefile`](@ref).
 """
 parsefile(f::AbstractString) =
-    Internals.parse(Internals.Parser{Dates}(_readstring(f); filepath=abspath(f)))
+	Internals.parse(Internals.Parser{Dates}(_readstring(f); filepath = abspath(f)))
 parsefile(p::Parser, f::AbstractString) =
-    Internals.parse(Internals.reinit!(p._p, _readstring(f); filepath=abspath(f)))
+	Internals.parse(Internals.reinit!(p._p, _readstring(f); filepath = abspath(f)))
 
 """
-    tryparsefile(f::AbstractString)
-    tryparsefile(p::Parser, f::AbstractString)
+	tryparsefile(f::AbstractString)
+	tryparsefile(p::Parser, f::AbstractString)
 
 Parse file `f` and return the resulting table (dictionary). Return a
 [`ParserError`](@ref) upon failure.
@@ -69,13 +69,13 @@ Parse file `f` and return the resulting table (dictionary). Return a
 See also [`TOML.parsefile`](@ref).
 """
 tryparsefile(f::AbstractString) =
-    Internals.tryparse(Internals.Parser{Dates}(_readstring(f); filepath=abspath(f)))
+	Internals.tryparse(Internals.Parser{Dates}(_readstring(f); filepath = abspath(f)))
 tryparsefile(p::Parser, f::AbstractString) =
-    Internals.tryparse(Internals.reinit!(p._p, _readstring(f); filepath=abspath(f)))
+	Internals.tryparse(Internals.reinit!(p._p, _readstring(f); filepath = abspath(f)))
 
 """
-    parse(x::Union{AbstractString, IO})
-    parse(p::Parser, x::Union{AbstractString, IO})
+	parse(x::Union{AbstractString, IO})
+	parse(p::Parser, x::Union{AbstractString, IO})
 
 Parse the string  or stream `x`, and return the resulting table (dictionary).
 Throw a [`ParserError`](@ref) upon failure.
@@ -84,15 +84,15 @@ See also [`TOML.tryparse`](@ref).
 """
 parse(p::Parser) = Internals.parse(p._p)
 parse(str::AbstractString) =
-    Internals.parse(Internals.Parser{Dates}(String(str)))
+	Internals.parse(Internals.Parser{Dates}(String(str)))
 parse(p::Parser, str::AbstractString) =
-    Internals.parse(Internals.reinit!(p._p, String(str)))
+	Internals.parse(Internals.reinit!(p._p, String(str)))
 parse(io::IO) = parse(read(io, String))
 parse(p::Parser, io::IO) = parse(p, read(io, String))
 
 """
-    tryparse(x::Union{AbstractString, IO})
-    tryparse(p::Parser, x::Union{AbstractString, IO})
+	tryparse(x::Union{AbstractString, IO})
+	tryparse(p::Parser, x::Union{AbstractString, IO})
 
 Parse the string or stream `x`, and return the resulting table (dictionary).
 Return a [`ParserError`](@ref) upon failure.
@@ -101,14 +101,14 @@ See also [`TOML.parse`](@ref).
 """
 tryparse(p::Parser) = Internals.tryparse(p._p)
 tryparse(str::AbstractString) =
-    Internals.tryparse(Internals.Parser{Dates}(String(str)))
+	Internals.tryparse(Internals.Parser{Dates}(String(str)))
 tryparse(p::Parser, str::AbstractString) =
-    Internals.tryparse(Internals.reinit!(p._p, String(str)))
+	Internals.tryparse(Internals.reinit!(p._p, String(str)))
 tryparse(io::IO) = tryparse(read(io, String))
 tryparse(p::Parser, io::IO) = tryparse(p, read(io, String))
 
 """
-    ParserError
+	ParserError
 
 Type that is returned from [`tryparse`](@ref) and [`tryparsefile`](@ref)
 when parsing fails. It contains (among others) the following fields:
@@ -121,7 +121,7 @@ const ParserError = Internals.ParserError
 
 
 """
-    print([to_toml::Function], io::IO [=stdout], data::AbstractDict; sorted=false, by=identity, inline_tables::IdSet{<:AbstractDict})
+	print([to_toml::Function], io::IO [=stdout], data::AbstractDict; sorted=false, by=identity, inline_tables::IdSet{<:AbstractDict})
 
 Write `data` as TOML syntax to the stream `io`. If the keyword argument `sorted` is set to `true`,
 sort tables according to the function given by the keyword argument `by`. If the keyword argument
@@ -143,8 +143,8 @@ Base.TOMLCache(p::Parser) = Base.TOMLCache(p._p, Dict{String, Base.CachedTOMLDic
 Base.TOMLCache(p::Parser, d::Base.CachedTOMLDict) = Base.TOMLCache(p._p, d)
 Base.TOMLCache(p::Parser, d::Dict{String, Dict{String, Any}}) = Base.TOMLCache(p._p, d)
 
-Internals.reinit!(p::Parser, str::String; filepath::Union{Nothing, String}=nothing) =
-    Internals.reinit!(p._p, str; filepath)
+Internals.reinit!(p::Parser, str::String; filepath::Union{Nothing, String} = nothing) =
+	Internals.reinit!(p._p, str; filepath)
 Internals.parse(p::Parser) = Internals.parse(p._p)
 Internals.tryparse(p::Parser) = Internals.tryparse(p._p)
 

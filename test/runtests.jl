@@ -6,13 +6,13 @@ using Dates
 using TOML: TOML, parse, tryparse, ParserError, Internals, print
 
 function roundtrip(data)
-    mktemp() do file, io
-        data_parsed = TOML.parse(data)
-        TOML.print(io, data_parsed)
-        close(io)
-        data_roundtrip = TOML.parsefile(file)
-        return isequal(data_parsed, data_roundtrip)
-    end
+	mktemp() do file, io
+		data_parsed = TOML.parse(data)
+		TOML.print(io, data_parsed)
+		close(io)
+		data_roundtrip = TOML.parsefile(file)
+		return isequal(data_parsed, data_roundtrip)
+	end
 end
 
 include("readme.jl")
@@ -27,5 +27,5 @@ include("parse.jl")
 @inferred TOML.parse("foo = 3")
 
 @testset "Docstrings" begin
-    @test isempty(Docs.undocumented_names(TOML))
+	@test isempty(Docs.undocumented_names(TOML))
 end

@@ -43,20 +43,20 @@ d = parse(str)
 @test d["title"] == "TOML Example"
 @test d["owner"]["name"] == "Tom Preston-Werner"
 @test d["database"] == Dict(
-  "server" => "192.168.1.1",
-  "ports" => [ 8001, 8001, 8002 ],
-  "connection_max" => 5000,
-  "enabled" => true,
+	"server" => "192.168.1.1",
+	"ports" => [ 8001, 8001, 8002 ],
+	"connection_max" => 5000,
+	"enabled" => true,
 )
 @test d["servers"] == Dict(
-  "alpha" => Dict(
-  "ip" => "10.0.0.1",
-  "dc" => "eqdc10",
-  ),
-  "beta" => Dict(
-    "ip" => "10.0.0.2",
-    "dc" => "eqdc10",
-  )
+	"alpha" => Dict(
+	"ip" => "10.0.0.1",
+	"dc" => "eqdc10",
+	),
+	"beta" => Dict(
+		"ip" => "10.0.0.2",
+		"dc" => "eqdc10",
+	)
 )
 
 @test d["clients"]["data"] == [ ["gamma", "delta"], [1, 2] ]
@@ -104,10 +104,10 @@ bare-key = "value"
 """
 @test roundtrip(str)
 @test parse(str) == Dict(
-  "key" => "value",
-  "bare_key" => "value",
-  "bare-key" => "value",
-  "1234" => "value",
+	"key" => "value",
+	"bare_key" => "value",
+	"bare-key" => "value",
+	"1234" => "value",
 )
 
 str = """
@@ -119,11 +119,11 @@ str = """
 """
 @test roundtrip(str)
 @test parse(str) == Dict(
-  "127.0.0.1" => "value",
-  "character encoding" => "value",
-  "ʎǝʞ" => "value",
-  "key2" => "value",
-  "quoted \"value\"" => "value",
+	"127.0.0.1" => "value",
+	"character encoding" => "value",
+	"ʎǝʞ" => "value",
+	"key2" => "value",
+	"quoted \"value\"" => "value",
 )
 
 str = """
@@ -153,9 +153,9 @@ site."google.com" = true
 
 @test roundtrip(str)
 @test parse(str) == Dict(
-  "name" => "Orange",
-  "physical" => Dict("color" => "orange", "shape" => "round"),
-  "site" => Dict("google.com" => true)
+	"name" => "Orange",
+	"physical" => Dict("color" => "orange", "shape" => "round"),
+	"site" => Dict("google.com" => true)
 )
 
 str = """
@@ -192,8 +192,8 @@ fruit.orange = 2
 """
 @test roundtrip(str)
 @test parse(str) == Dict(
-  "fruit" => Dict("orange" => 2,
-                  "apple" => Dict("smooth" => true)))
+	"fruit" => Dict("orange" => 2,
+					"apple" => Dict("smooth" => true)))
 
 str = """
 # THE FOLLOWING IS INVALID
@@ -223,8 +223,8 @@ orange.color = "orange"
 """
 @test roundtrip(str)
 @test parse(str) == Dict(
-  "apple" => Dict("type" => "fruit", "skin" => "thin", "color" => "red"),
-  "orange" => Dict("type" => "fruit", "skin" => "thick", "color" => "orange"),
+	"apple" => Dict("type" => "fruit", "skin" => "thin", "color" => "red"),
+	"orange" => Dict("type" => "fruit", "skin" => "thick", "color" => "orange"),
 )
 
 str = """
@@ -240,8 +240,8 @@ orange.color = "orange"
 """
 @test roundtrip(str)
 @test parse(str) == Dict(
-  "apple" => Dict("type" => "fruit", "skin" => "thin", "color" => "red"),
-  "orange" => Dict("type" => "fruit", "skin" => "thick", "color" => "orange"),
+	"apple" => Dict("type" => "fruit", "skin" => "thin", "color" => "red"),
+	"orange" => Dict("type" => "fruit", "skin" => "thick", "color" => "orange"),
 )
 
 end #testset
@@ -681,10 +681,10 @@ d = parse(str)
 @test d["string_array"] == ["all", "strings", "are the same", "type"]
 @test all(d["numbers"] .=== Any[0.1, 0.2, 0.5, Int64(1), Int64(2), Int64(5)])
 @test d["contributors"] == [
-    "Foo Bar <foo@example.com>",
-    Dict("name" => "Baz Qux",
-         "email" => "bazqux@example.com",
-         "url" => "https://example.com/bazqux")
+		"Foo Bar <foo@example.com>",
+		Dict("name" => "Baz Qux",
+			 "email" => "bazqux@example.com",
+			 "url" => "https://example.com/bazqux")
 ]
 
 str = """
@@ -733,10 +733,10 @@ str = """
 @test roundtrip(str)
 d = parse(str)
 @test d == Dict(
-  "a" => Dict("b" => Dict("c" => Dict())),
-  "d" => Dict("e" => Dict("f" => Dict())),
-  "g" => Dict("h" => Dict("i" => Dict())),
-  "j" => Dict("ʞ" => Dict("l" => Dict())),
+	"a" => Dict("b" => Dict("c" => Dict())),
+	"d" => Dict("e" => Dict("f" => Dict())),
+	"g" => Dict("h" => Dict("i" => Dict())),
+	"j" => Dict("ʞ" => Dict("l" => Dict())),
 )
 
 
@@ -766,10 +766,10 @@ b = 2
 @test roundtrip(str)
 d = parse(str)
 @test d == Dict(
-  "x" => Dict(
-      "b" => 2,
-      "y" => Dict("z" => Dict("w" => Dict("a" => 3)))
-  )
+	"x" => Dict(
+			"b" => 2,
+			"y" => Dict("z" => Dict("w" => Dict("a" => 3)))
+	)
 )
 
 
@@ -809,8 +809,8 @@ str = """
 @test roundtrip(str)
 d = parse(str)
 @test d == Dict(
-  "fruit" => Dict("apple" => Dict(), "orange" => Dict()),
-  "animal" => Dict()
+	"fruit" => Dict("apple" => Dict(), "orange" => Dict()),
+	"animal" => Dict()
 )
 
 str = """
@@ -821,8 +821,8 @@ str = """
 """
 @test roundtrip(str)
 @test d == Dict(
-  "fruit" => Dict("apple" => Dict(), "orange" => Dict()),
-  "animal" => Dict()
+	"fruit" => Dict("apple" => Dict(), "orange" => Dict()),
+	"animal" => Dict()
 )
 
 str = """
@@ -840,8 +840,8 @@ smooth = true
 d = parse(str)
 @test d == Dict(
 "fruit" => Dict("apple" => Dict("color" => "red",
-                                "taste" => Dict("sweet" => true),
-                                "texture" => Dict("smooth" => true)))
+								"taste" => Dict("sweet" => true),
+								"texture" => Dict("smooth" => true)))
 )
 
 end # testset
@@ -906,14 +906,14 @@ color = "gray"
 """
 @test roundtrip(str)
 @test parse(str) == Dict(
-  "products" => [
-    Dict("name" => "Hammer",
-         "sku" => 738594937),
-    Dict(),
-    Dict("name" => "Nail",
-         "sku" => 284758393,
-         "color" => "gray")
-  ]
+	"products" => [
+		Dict("name" => "Hammer",
+			 "sku" => 738594937),
+		Dict(),
+		Dict("name" => "Nail",
+			 "sku" => 284758393,
+			 "color" => "gray")
+	]
 )
 
 str = """
@@ -939,18 +939,18 @@ str = """
 @test roundtrip(str)
 d = parse(str)
 @test d == Dict(
-  "fruit" => [
-      Dict("name" => "apple",
-           "physical" => Dict("color" => "red", "shape" => "round"),
-           "variety" => [
-        Dict("name" => "red delicious"),
-        Dict("name" => "granny smith"),
-      ]),
-      Dict("name" => "banana",
-           "variety" => [
-             Dict("name" => "plantain"),
-          ]
-      )
+	"fruit" => [
+			Dict("name" => "apple",
+				 "physical" => Dict("color" => "red", "shape" => "round"),
+				 "variety" => [
+				Dict("name" => "red delicious"),
+				Dict("name" => "granny smith"),
+			]),
+			Dict("name" => "banana",
+				 "variety" => [
+				Dict("name" => "plantain"),
+			]
+			)
 ])
 
 str = """
@@ -1018,11 +1018,11 @@ points = [ { x = 1, y = 2, z = 3 },
 @test roundtrip(str)
 d = tryparse(str)
 @test d == Dict(
-  "points" => [
-    Dict("x" => 1, "y" => 2, "z" => 3) ,
-    Dict("x" => 7, "y" => 8, "z" => 9) ,
-    Dict("x" => 2, "y" => 4, "z" => 8)
-  ]
+	"points" => [
+		Dict("x" => 1, "y" => 2, "z" => 3) ,
+		Dict("x" => 7, "y" => 8, "z" => 9) ,
+		Dict("x" => 2, "y" => 4, "z" => 8)
+	]
 )
 
 end
