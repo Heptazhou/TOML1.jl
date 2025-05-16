@@ -43,13 +43,13 @@ will however reuse some internal data structures which can be beneficial for
 performance if a larger number of small files are parsed.
 """
 struct Parser
-	_p::Internals.Parser{Dates}
+	_p::Internals.Parser
 end
 
 # Dates-enabled constructors
-Parser() = Parser(Internals.Parser{Dates}())
-Parser(io::IO) = Parser(Internals.Parser{Dates}(io))
-Parser(str::String; filepath = nothing) = Parser(Internals.Parser{Dates}(str; filepath))
+Parser() = Parser(Internals.Parser())
+Parser(io::IO) = Parser(Internals.Parser(io))
+Parser(str::String; filepath = nothing) = Parser(Internals.Parser(str; filepath))
 
 """
 	parsefile(f::AbstractString)
@@ -61,7 +61,7 @@ Parse file `f` and return the resulting table (dictionary). Throw a
 See also [`TOML1.tryparsefile`](@ref).
 """
 parsefile(f::AbstractString) =
-	Internals.parse(Internals.Parser{Dates}(_readstring(f); filepath = abspath(f)))
+	Internals.parse(Internals.Parser(_readstring(f); filepath = abspath(f)))
 parsefile(p::Parser, f::AbstractString) =
 	Internals.parse(Internals.reinit!(p._p, _readstring(f); filepath = abspath(f)))
 
@@ -75,7 +75,7 @@ Parse file `f` and return the resulting table (dictionary). Return a
 See also [`TOML1.parsefile`](@ref).
 """
 tryparsefile(f::AbstractString) =
-	Internals.tryparse(Internals.Parser{Dates}(_readstring(f); filepath = abspath(f)))
+	Internals.tryparse(Internals.Parser(_readstring(f); filepath = abspath(f)))
 tryparsefile(p::Parser, f::AbstractString) =
 	Internals.tryparse(Internals.reinit!(p._p, _readstring(f); filepath = abspath(f)))
 
@@ -90,7 +90,7 @@ See also [`TOML1.tryparse`](@ref).
 """
 parse(p::Parser) = Internals.parse(p._p)
 parse(str::AbstractString) =
-	Internals.parse(Internals.Parser{Dates}(String(str)))
+	Internals.parse(Internals.Parser(String(str)))
 parse(p::Parser, str::AbstractString) =
 	Internals.parse(Internals.reinit!(p._p, String(str)))
 parse(io::IO) = parse(read(io, String))
@@ -107,7 +107,7 @@ See also [`TOML1.parse`](@ref).
 """
 tryparse(p::Parser) = Internals.tryparse(p._p)
 tryparse(str::AbstractString) =
-	Internals.tryparse(Internals.Parser{Dates}(String(str)))
+	Internals.tryparse(Internals.Parser(String(str)))
 tryparse(p::Parser, str::AbstractString) =
 	Internals.tryparse(Internals.reinit!(p._p, String(str)))
 tryparse(io::IO) = tryparse(read(io, String))

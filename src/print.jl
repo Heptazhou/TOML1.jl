@@ -91,9 +91,6 @@ end
 
 #! format: off
 function printvalue(f::MbyFunc, io::IO, value::TOMLValue, sorted::Bool)
-	value isa TOMLParser.DateTime && (value = Dates.DateTime(value))
-	value isa TOMLParser.Time && (value = Dates.Time(value))
-	value isa TOMLParser.Date && (value = Dates.Date(value))
 	value isa Dates.DateTime ? Base.print(io, Dates.format(value, Dates.dateformat"YYYY-mm-dd\THH:MM:SS.sss\Z")) :
 	value isa Dates.Time     ? Base.print(io, Dates.format(value, Dates.dateformat"HH:MM:SS.sss")) :
 	value isa Dates.Date     ? Base.print(io, Dates.format(value, Dates.dateformat"YYYY-mm-dd")) :

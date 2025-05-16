@@ -8,28 +8,8 @@ TOML.jl standard library instead (by `import TOML` or `using TOML`).
 module TOMLParser
 
 using Base: IdSet
+using Dates: Dates, DateTime, Date, Time
 using Exts
-
-# we parse DateTime into these internal structs,
-# unless a different DateTime library is passed to the Parser constructor
-# note that these do not do any argument checking
-struct Date
-	year::Int
-	month::Int
-	day::Int
-end
-struct Time
-	hour::Int
-	minute::Int
-	second::Int
-	ms::Int
-end
-struct DateTime
-	date::Date
-	time::Time
-end
-DateTime(y, m, d, h, mi, s, ms) =
-	DateTime(Date(y, m, d), Time(h, mi, s, ms))
 
 const EOF_CHAR = typemax(Char)
 
@@ -39,7 +19,7 @@ const TOMLDict = Dict{String, Any}
 # Parser #
 ##########
 
-mutable struct Parser{Dates}
+mutable struct Parser
 	str::String
 	# 1 character look ahead
 	current_char::Char
@@ -87,12 +67,12 @@ mutable struct Parser{Dates}
 	filepath::Maybe{String}
 
 	# Optionally populate with the Dates stdlib to change the type of Date types returned
-	Dates::Maybe{Module} # TODO: remove once Pkg is updated
+	Dates::Nothing # TODO: remove once Pkg is updated
 end
 
-function Parser{Dates}(str::String; filepath = nothing) where Dates
+function Parser(str::String; filepath = nothing)
 	root = TOMLDict()
-	l = Parser{Dates}(
+	l = Parser(
 		str,                  # str
 		EOF_CHAR,             # current_char
 		firstindex(str),      # pos
@@ -124,8 +104,8 @@ function startup(l::Parser)
 	end
 end
 
-Parser{Dates}() where Dates = Parser{Dates}("")
-Parser{Dates}(io::IO) where Dates = Parser{Dates}(read(io, String))
+Parser() = Parser("")
+Parser(io::IO) = Parser(read(io, String))
 
 # Parser(...) will be defined by TOML stdlib
 
@@ -1026,7 +1006,7 @@ function parse_datetime(l)
 	return try_return_datetime(l, year, month, day, h, m, s, ms)
 end
 
-function try_return_datetime(p::Parser{Dates}, year, month, day, h, m, s, ms) where Dates
+function try_return_datetime(p::Parser, year, month, day, h, m, s, ms)
 	if Dates !== nothing || p.Dates !== nothing
 		mod = Dates !== nothing ? Dates : p.Dates
 		try
@@ -1040,7 +1020,7 @@ function try_return_datetime(p::Parser{Dates}, year, month, day, h, m, s, ms) wh
 	end
 end
 
-function try_return_date(p::Parser{Dates}, year, month, day) where Dates
+function try_return_date(p::Parser, year, month, day)
 	if Dates !== nothing || p.Dates !== nothing
 		mod = Dates !== nothing ? Dates : p.Dates
 		try
@@ -1063,7 +1043,7 @@ function parse_local_time(l::Parser)
 	return try_return_time(l, h, m, s, ms)
 end
 
-function try_return_time(p::Parser{Dates}, h, m, s, ms) where Dates
+function try_return_time(p::Parser, h, m, s, ms)
 	if Dates !== nothing || p.Dates !== nothing
 		mod = Dates !== nothing ? Dates : p.Dates
 		try
