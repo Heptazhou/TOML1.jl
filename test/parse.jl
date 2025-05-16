@@ -1,7 +1,7 @@
 # This file is a part of Julia. License is MIT: https://julialang.org/license
 
-using TOML, Test
-using TOML: ParserError
+using TOML1, Test
+using TOML1: ParserError
 
 @testset "TOML.(try)parse(file) entrypoints" begin
 	dict = Dict{String,Any}("a" => 1)

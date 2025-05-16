@@ -3,7 +3,7 @@
 using Test
 using Dates
 
-using TOML: TOML, parse, tryparse, ParserError, Internals, print
+using TOML1: TOML1 as TOML, parse, tryparse, ParserError, Internals, print
 
 function roundtrip(data)
 	mktemp() do file, io

@@ -1,8 +1,8 @@
 # This file is a part of Julia. License is MIT: https://julialang.org/license
 
 using Test
-using TOML
-using TOML: Internals
+using TOML1
+using TOML1: Internals
 
 # Construct an explicit Parser to test the "cached" version of parsing
 const test_parser = TOML.Parser()

@@ -1,6 +1,6 @@
 # This file is a part of Julia. License is MIT: https://julialang.org/license
 
-using TOML
+using TOML1
 
 using Test
 using Dates

@@ -1,16 +1,16 @@
 # This file is a part of Julia. License is MIT: https://julialang.org/license
 
 using Documenter
-import TOML
+import TOML1
 
 makedocs(
-	modules = [TOML],
-	sitename = "TOML",
+	modules = [TOML1],
+	sitename = "TOML1",
 	checkdocs = :strict,
 	doctest = true,
 	pages = Any[
-		"TOML" => "index.md"
+		"TOML1" => "index.md"
 		]
 	)
 
-deploydocs(repo = "github.com/KristofferC/TOML.jl.git")
+deploydocs(repo = "github.com/Heptazhou/TOML1.jl.git")
