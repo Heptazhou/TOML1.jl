@@ -117,10 +117,16 @@ end
 
 @testset "Datetime" begin
 	#! format: off
-	@test testval("2016-09-09T09:09:09"    , DateTime(2016, 9, 9, 9, 9, 9))
-	@test testval("2016-09-09T09:09:09Z"   , DateTime(2016, 9, 9, 9, 9, 9))
-	@test testval("2016-09-09T09:09:09.0Z" , DateTime(2016, 9, 9, 9, 9, 9))
-	@test testval("2016-09-09T09:09:09.012", DateTime(2016, 9, 9, 9, 9, 9, 12))
+	@test testval("2016-09-09 09:09:09"     , DateTime(2016, 9, 9, 9, 9, 9))
+	@test testval("2016-09-09T09:09:09"     , DateTime(2016, 9, 9, 9, 9, 9))
+	@test testval("2016-09-09 09:09:09Z"    , DateTime(2016, 9, 9, 9, 9, 9))
+	@test testval("2016-09-09T09:09:09Z"    , DateTime(2016, 9, 9, 9, 9, 9))
+	@test testval("2016-09-09 09:09:09.0Z"  , DateTime(2016, 9, 9, 9, 9, 9))
+	@test testval("2016-09-09T09:09:09.0Z"  , DateTime(2016, 9, 9, 9, 9, 9))
+	@test testval("2016-09-09 09:09:09.012" , DateTime(2016, 9, 9, 9, 9, 9, 12))
+	@test testval("2016-09-09T09:09:09.012" , DateTime(2016, 9, 9, 9, 9, 9, 12))
+	@test testval("2016-09-09 09:09:09.012Z", DateTime(2016, 9, 9, 9, 9, 9, 12))
+	@test testval("2016-09-09T09:09:09.012Z", DateTime(2016, 9, 9, 9, 9, 9, 12))
 
 	@test failval("2016-09-09T09:09:09.0+10:00"  , Internals.ErrOffsetDateNotSupported)
 	@test failval("2016-09-09T09:09:09.012-02:00", Internals.ErrOffsetDateNotSupported)

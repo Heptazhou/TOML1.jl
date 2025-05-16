@@ -91,7 +91,7 @@ end
 
 #! format: off
 function printvalue(f::MbyFunc, io::IO, value::TOMLValue, sorted::Bool)
-	value isa Dates.DateTime ? Base.print(io, Dates.format(value, Dates.dateformat"YYYY-mm-dd\THH:MM:SS.sss\Z")) :
+	value isa Dates.DateTime ? Base.print(io, Dates.format(value, Dates.dateformat"YYYY-mm-dd\THH:MM:SS.sss")) :
 	value isa Dates.Time     ? Base.print(io, Dates.format(value, Dates.dateformat"HH:MM:SS.sss")) :
 	value isa Dates.Date     ? Base.print(io, Dates.format(value, Dates.dateformat"YYYY-mm-dd")) :
 	value isa Bool           ? Base.print(io, value ? "true" : "false") :
@@ -229,6 +229,9 @@ end
 # API #
 #######
 
+print(io::IO, f::MbyFunc,
+	a::AbstractDict; sorted::Bool = false, by = identity,
+	inline_tables::IdSet{<:AbstractDict} = IdSet{Dict{String}}()) = print_table(f, io, a; sorted, by, inline_tables)
 print(f::MbyFunc, io::IO,
 	a::AbstractDict; sorted::Bool = false, by = identity,
 	inline_tables::IdSet{<:AbstractDict} = IdSet{Dict{String}}()) = print_table(f, io, a; sorted, by, inline_tables)

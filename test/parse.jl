@@ -3,7 +3,7 @@
 using TOML1, Test
 using TOML1: ParserError
 
-@testset "TOML.(try)parse(file) entrypoints" begin
+@testset "[try]parse[file]" begin
 	dict = Dict{String, Any}("a" => 1)
 	#! format: off
 	str = "a = 1"; invalid_str = "a"
@@ -41,8 +41,8 @@ using TOML1: ParserError
 	@test_throws ParserError TOML.parsefile(SubString(invalid_path))
 	@test_throws ParserError TOML.parsefile(p, invalid_path)
 	@test_throws ParserError TOML.parsefile(p, SubString(invalid_path))
-	@test_throws ErrorException TOML.parsefile(homedir())
-	@test_throws ErrorException TOML.parsefile(p, homedir())
+	@test_throws SystemError TOML.parsefile(homedir())
+	@test_throws SystemError TOML.parsefile(p, homedir())
 	# TOML.tryparsefile
 	@test TOML.tryparsefile(path) == TOML.tryparsefile(SubString(path)) ==
 		  TOML.tryparsefile(p, path) == TOML.tryparsefile(p, SubString(path)) == dict
@@ -50,6 +50,6 @@ using TOML1: ParserError
 	@test TOML.tryparsefile(SubString(invalid_path)) isa ParserError
 	@test TOML.tryparsefile(p, invalid_path) isa ParserError
 	@test TOML.tryparsefile(p, SubString(invalid_path)) isa ParserError
-	@test_throws ErrorException TOML.tryparsefile(homedir())
-	@test_throws ErrorException TOML.tryparsefile(p, homedir())
+	@test_throws SystemError TOML.tryparsefile(homedir())
+	@test_throws SystemError TOML.tryparsefile(p, homedir())
 end

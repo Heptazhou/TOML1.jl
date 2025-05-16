@@ -31,7 +31,12 @@ module Internals
 end
 
 # https://github.com/JuliaLang/julia/issues/36605
-_readstring(f::AbstractString) = isfile(f) ? read(f, String) : error(repr(f), ": No such file")
+_readstring(f::AbstractString) = @static if !Sys.iswindows()
+	!isfile(f) ? throw(SystemError(f, Libc.ENOENT)) :
+	readstr(f)
+else
+	readstr(f)
+end
 
 """
 	Parser()

@@ -137,7 +137,7 @@ end
 # all the way and have this error be returned to the user
 # if the parse is called with `raise=false`. This macro
 # makes that easier
-@eval macro $(:var"try")(expr)
+@eval macro $(:tryparse)(expr)
 	return quote
 		v = $(esc(expr))
 		v isa ParserError && return v
@@ -454,14 +454,14 @@ end
 function parse_toplevel(l::Parser)::Err{Nothing}
 	if accept(l, '[')
 		l.active_table = l.root
-		@try parse_table(l)
+		@tryparse parse_table(l)
 		skip_ws_comment(l)
 		if !(peek(l) == '\n' || peek(l) == '\r' || peek(l) == '#' || peek(l) == EOF_CHAR)
 			eat_char(l)
 			return ParserError(ErrExpectedNewLineKeyValue)
 		end
 	else
-		@try parse_entry(l, l.active_table)
+		@tryparse parse_entry(l, l.active_table)
 		skip_ws_comment(l)
 		# SPEC: "There must be a newline (or EOF) after a key/value pair."
 		if !(peek(l) == '\n' || peek(l) == '\r' || peek(l) == '#' || peek(l) == EOF_CHAR)
@@ -479,7 +479,7 @@ function recurse_dict!(l::Parser, d::Dict, dotted_keys::AbstractVector{String}, 
 		if d isa Vector
 			d = d[end]
 		end
-		check && @try check_allowed_add_key(l, d, i == length(dotted_keys))
+		check && @tryparse check_allowed_add_key(l, d, i == length(dotted_keys))
 	end
 	return d::TOMLDict
 end
@@ -500,23 +500,23 @@ function parse_table(l)
 	if accept(l, '[')
 		return parse_array_table(l)
 	end
-	table_key = @try parse_key(l)
+	table_key = @tryparse parse_key(l)
 	skip_ws(l)
 	if !accept(l, ']')
 		return ParserError(ErrExpectedEndOfTable)
 	end
-	l.active_table = @try recurse_dict!(l, l.root, table_key)
+	l.active_table = @tryparse recurse_dict!(l, l.root, table_key)
 	push!(l.defined_tables, l.active_table)
 	return
 end
 
 function parse_array_table(l)::Maybe{ParserError}
-	table_key = @try parse_key(l)
+	table_key = @tryparse parse_key(l)
 	skip_ws(l)
 	if !(accept(l, ']') && accept(l, ']'))
 		return ParserError(ErrExpectedEndArrayOfTable)
 	end
-	d = @try recurse_dict!(l, l.root, @view(table_key[1:end-1]), false)
+	d = @tryparse recurse_dict!(l, l.root, @view(table_key[1:end-1]), false)
 	k = table_key[end]
 	old = get!(() -> [], d, k)
 	if old isa Vector
@@ -535,23 +535,23 @@ function parse_array_table(l)::Maybe{ParserError}
 end
 
 function parse_entry(l::Parser, d)::Maybe{ParserError}
-	key = @try parse_key(l)
+	key = @tryparse parse_key(l)
 	skip_ws(l)
 	if !accept(l, '=')
 		return ParserError(ErrExpectedEqualAfterKey)
 	end
 	if length(key) > 1
-		d = @try recurse_dict!(l, d, @view(key[1:end-1]))
+		d = @tryparse recurse_dict!(l, d, @view(key[1:end-1]))
 	end
 	last_key_part = l.dotted_keys[end]
 
 	v = get(d, last_key_part, nothing)
 	if v !== nothing
-		@try check_allowed_add_key(l, v)
+		@tryparse check_allowed_add_key(l, v)
 	end
 
 	skip_ws(l)
-	value = @try parse_value(l)
+	value = @tryparse parse_value(l)
 	# Not allowed to overwrite a value with an inline dict
 	if value isa Dict && haskey(d, last_key_part)
 		return ParserError(ErrInlineTableRedefine)
@@ -590,9 +590,9 @@ function _parse_key(l::Parser)
 		return ParserError(ErrEmptyBareKey)
 	end
 	keyval = if accept(l, '"')
-		@try parse_string_start(l, false)
+		@tryparse parse_string_start(l, false)
 	elseif accept(l, '\'')
-		@try parse_string_start(l, true)
+		@tryparse parse_string_start(l, true)
 	else
 		set_marker!(l)
 		if accept_batch(l, isvalid_barekey_char)
@@ -612,7 +612,7 @@ function _parse_key(l::Parser)
 	skip_ws(l)
 	if accept(l, '.')
 		skip_ws(l)
-		@try _parse_key(l)
+		@tryparse _parse_key(l)
 	end
 	return l.dotted_keys
 end
@@ -681,7 +681,7 @@ function parse_array(l::Parser)::Err{Vector}
 	array = Vector{Union{}}()
 	empty_array = accept(l, ']')
 	while !empty_array
-		v = @try parse_value(l)
+		v = @tryparse parse_value(l)
 		# TODO: Worth to function barrier this?
 		array = push!!(array, v)
 		# There can be an arbitrary number of newlines and comments before a value and before the closing bracket.
@@ -708,7 +708,7 @@ function parse_inline_table(l::Parser)::Err{TOMLDict}
 	skip_ws(l)
 	accept(l, '}') && return dict
 	while true
-		@try parse_entry(l, dict)
+		@tryparse parse_entry(l, dict)
 		# SPEC: No newlines are allowed between the curly braces unless they are valid within a value.
 		skip_ws(l)
 		accept(l, '}') && return dict
@@ -807,15 +807,15 @@ function parse_number_or_date_start(l::Parser)
 			return Int64(0)
 		elseif accept(l, 'x')
 			parsed_sign && return ParserError(ErrSignInNonBase10Number)
-			ate, contains_underscore = @try accept_batch_underscore(l, isvalid_hex)
+			ate, contains_underscore = @tryparse accept_batch_underscore(l, isvalid_hex)
 			ate && return parse_hex(l, contains_underscore)
 		elseif accept(l, 'o')
 			parsed_sign && return ParserError(ErrSignInNonBase10Number)
-			ate, contains_underscore = @try accept_batch_underscore(l, isvalid_oct)
+			ate, contains_underscore = @tryparse accept_batch_underscore(l, isvalid_oct)
 			ate && return parse_oct(l, contains_underscore)
 		elseif accept(l, 'b')
 			parsed_sign && return ParserError(ErrSignInNonBase10Number)
-			ate, contains_underscore = @try accept_batch_underscore(l, isvalid_binary)
+			ate, contains_underscore = @tryparse accept_batch_underscore(l, isvalid_binary)
 			ate && return parse_bin(l, contains_underscore)
 		elseif accept(l, isdigit)
 			return parse_local_time(l)
@@ -831,7 +831,7 @@ function parse_number_or_date_start(l::Parser)
 			return ParserError(ErrUnexpectedStartOfValue)
 		end
 	end
-	ate, contains_underscore = @try accept_batch_underscore(l, isdigit, readed_zero)
+	ate, contains_underscore = @tryparse accept_batch_underscore(l, isdigit, readed_zero)
 	read_underscore |= contains_underscore
 	if (read_digit || ate) && ok_end_value(peek(l))
 		return parse_integer(l, contains_underscore)
@@ -850,7 +850,7 @@ function parse_number_or_date_start(l::Parser)
 
 	# can optionally read a . + digits and then exponent
 	ate_dot = accept(l, '.')
-	ate, contains_underscore = @try accept_batch_underscore(l, isdigit, true)
+	ate, contains_underscore = @tryparse accept_batch_underscore(l, isdigit, true)
 	if ate_dot && !ate
 		return ParserError(ErrNoTrailingDigitAfterDot)
 	end
@@ -859,7 +859,7 @@ function parse_number_or_date_start(l::Parser)
 		accept(l, x -> x == '+' || x == '-')
 		# SPEC: (which follows the same rules as decimal integer values but may include leading zeros)
 		read_digit = accept_batch(l, isdigit)
-		ate, read_underscore = @try accept_batch_underscore(l, isdigit, !read_digit)
+		ate, read_underscore = @tryparse accept_batch_underscore(l, isdigit, !read_digit)
 		contains_underscore |= read_underscore
 	end
 	if !ok_end_value(peek(l))
@@ -956,21 +956,21 @@ ok_end_value(c::Char) = iswhitespace(c) || c == '#' || c == EOF_CHAR || c == ']'
 accept_two(l, f::F) where F = accept_n(l, 2, f) || return ParserError(ErrParsingDateTime)
 function parse_datetime(l)
 	# Year has already been eaten when we reach here
-	year = @try parse_int(l, false)
+	year = @tryparse parse_int(l, false)
 	year in 0:9999 || return ParserError(ErrParsingDateTime)
 
 	# Month
 	accept(l, '-') || return ParserError(ErrParsingDateTime)
 	set_marker!(l)
-	@try accept_two(l, isdigit)
-	month = @try parse_int(l, false)
+	@tryparse accept_two(l, isdigit)
+	month = @tryparse parse_int(l, false)
 	month in 1:12 || return ParserError(ErrParsingDateTime)
 	accept(l, '-') || return ParserError(ErrParsingDateTime)
 
 	# Day
 	set_marker!(l)
-	@try accept_two(l, isdigit)
-	day = @try parse_int(l, false)
+	@tryparse accept_two(l, isdigit)
+	day = @tryparse parse_int(l, false)
 	# Verify the real range in the constructor below
 	day in 1:31 || return ParserError(ErrParsingDateTime)
 
@@ -989,7 +989,7 @@ function parse_datetime(l)
 		accept(l, 'T') || accept(l, 't') || return ParserError(ErrParsingDateTime)
 	end
 
-	h, m, s, ms = @try _parse_local_time(l)
+	h, m, s, ms = @tryparse _parse_local_time(l)
 
 	# Julia doesn't support offset times
 	if !accept(l, 'Z')
@@ -1035,9 +1035,9 @@ function try_return_date(p::Parser, year, month, day)
 end
 
 function parse_local_time(l::Parser)
-	h = @try parse_int(l, false)
+	h = @tryparse parse_int(l, false)
 	h in 0:23 || return ParserError(ErrParsingDateTime)
-	_, m, s, ms = @try _parse_local_time(l, true)
+	_, m, s, ms = @tryparse _parse_local_time(l, true)
 	# TODO: Could potentially parse greater accuracy for the
 	# fractional seconds here.
 	return try_return_time(l, h, m, s, ms)
@@ -1064,7 +1064,7 @@ function _parse_local_time(l::Parser, skip_hour = false)::Err{NTuple{4, Int64}}
 		hour = Int64(0)
 	else
 		set_marker!(l)
-		@try accept_two(l, isdigit)
+		@tryparse accept_two(l, isdigit)
 		hour = parse_int(l, false)
 		hour in 0:23 || return ParserError(ErrParsingDateTime)
 	end
@@ -1073,7 +1073,7 @@ function _parse_local_time(l::Parser, skip_hour = false)::Err{NTuple{4, Int64}}
 
 	# minute
 	set_marker!(l)
-	@try accept_two(l, isdigit)
+	@tryparse accept_two(l, isdigit)
 	minute = parse_int(l, false)
 	minute in 0:59 || return ParserError(ErrParsingDateTime)
 
@@ -1081,7 +1081,7 @@ function _parse_local_time(l::Parser, skip_hour = false)::Err{NTuple{4, Int64}}
 
 	# second
 	set_marker!(l)
-	@try accept_two(l, isdigit)
+	@tryparse accept_two(l, isdigit)
 	second = parse_int(l, false)
 	second in 0:59 || return ParserError(ErrParsingDateTime)
 
