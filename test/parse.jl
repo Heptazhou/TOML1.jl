@@ -4,10 +4,12 @@ using TOML1, Test
 using TOML1: ParserError
 
 @testset "TOML.(try)parse(file) entrypoints" begin
-	dict = Dict{String,Any}("a" => 1)
+	dict = Dict{String, Any}("a" => 1)
+	#! format: off
 	str = "a = 1"; invalid_str = "a"
 	path, io = mktemp(); write(io, str); close(io)
 	invalid_path, io = mktemp(); write(io, invalid_str); close(io)
+	#! format: on
 	p = TOML.Parser()
 	# TOML.parse
 	@test TOML.parse(str) == TOML.parse(SubString(str)) ==

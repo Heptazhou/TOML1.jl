@@ -143,8 +143,7 @@ Base.TOMLCache(p::Parser) = Base.TOMLCache(p._p, Dict{String, Base.CachedTOMLDic
 Base.TOMLCache(p::Parser, d::Base.CachedTOMLDict) = Base.TOMLCache(p._p, d)
 Base.TOMLCache(p::Parser, d::Dict{String, Dict{String, Any}}) = Base.TOMLCache(p._p, d)
 
-Internals.reinit!(p::Parser, str::String; filepath::Union{Nothing, String} = nothing) =
-	Internals.reinit!(p._p, str; filepath)
+Internals.reinit!(p::Parser, str::String; filepath::Union{Nothing, String} = nothing) = Internals.reinit!(p._p, str; filepath)
 Internals.parse(p::Parser) = Internals.parse(p._p)
 Internals.tryparse(p::Parser) = Internals.tryparse(p._p)
 

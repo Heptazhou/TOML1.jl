@@ -1,6 +1,6 @@
 # This file is a part of Julia. License is MIT: https://julialang.org/license
 
-import Dates
+using Dates: Dates
 
 import Base: @invokelatest
 import ..isvalid_barekey_char
@@ -26,7 +26,7 @@ function print_toml_escaped(io::IO, s::AbstractString)
 			Base.print(io, "\\", '\\')
 		elseif Base.iscntrl(c)
 			Base.print(io, "\\u")
-			Base.print(io, string(UInt32(c), base=16, pad=4))
+			Base.print(io, string(UInt32(c), base = 16, pad = 4))
 		else
 			Base.print(io, c)
 		end
@@ -35,7 +35,7 @@ end
 
 const MbyFunc = Union{Function, Nothing}
 const TOMLValue = Union{AbstractVector, AbstractDict, Bool, Integer, AbstractFloat, AbstractString,
-						Dates.DateTime, Dates.Time, Dates.Date, Base.TOML.DateTime, Base.TOML.Time, Base.TOML.Date}
+	Dates.DateTime, Dates.Time, Dates.Date, Base.TOML.DateTime, Base.TOML.Time, Base.TOML.Date}
 
 
 ########
@@ -89,6 +89,7 @@ function printvalue(f::MbyFunc, io::IO, value::AbstractVector, sorted::Bool)
 	Base.print(io, "]")
 end
 
+#! format: off
 function printvalue(f::MbyFunc, io::IO, value::TOMLValue, sorted::Bool)
 	value isa Base.TOML.DateTime && (value = Dates.DateTime(value))
 	value isa Base.TOML.Time && (value = Dates.Time(value))
@@ -108,12 +109,13 @@ function printvalue(f::MbyFunc, io::IO, value::TOMLValue, sorted::Bool)
 	value isa AbstractDict ? print_inline_table(f, io, value, sorted) :
 	error("internal error in TOML printing, unhandled value")
 end
+#! format: on
 
 function print_integer(io::IO, value::Integer)
 	value isa Signed && return Base.show(io, value)
 	# unsigned integers are printed as hex
-	n = 2 * ndigits(value, base=256)
-	Base.print(io, "0x", string(value, base=16, pad=n))
+	n = 2 * ndigits(value, base = 256)
+	Base.print(io, "0x", string(value, base = 16, pad = n))
 	return
 end
 
@@ -138,6 +140,7 @@ end
 # Tables #
 ##########
 
+#! format: off
 is_table(value)           = isa(value, AbstractDict)
 is_array_of_tables(value) = isa(value, AbstractArray) &&
 							length(value) > 0 && (
@@ -145,6 +148,7 @@ is_array_of_tables(value) = isa(value, AbstractArray) &&
 								all(v -> isa(v, AbstractDict), value)
 							)
 is_tabular(value)         = is_table(value) || @invokelatest(is_array_of_tables(value))
+#! format: on
 
 function print_table(f::MbyFunc, io::IO, a::AbstractDict,
 	ks::Vector{String} = String[];
@@ -175,7 +179,7 @@ function print_table(f::MbyFunc, io::IO, a::AbstractDict,
 			continue
 		end
 
-		Base.print(io, ' '^4max(0,indent-1))
+		Base.print(io, '\t'^max(0, indent - 1))
 		printkey(io, [String(key)])
 		Base.print(io, " = ") # print separator
 		printvalue(f, io, value, sorted)
@@ -196,10 +200,10 @@ function print_table(f::MbyFunc, io::IO, a::AbstractDict,
 				# print table
 				first_block || println(io)
 				first_block = false
-				Base.print(io, ' '^4indent)
-				Base.print(io,"[")
+				Base.print(io, '\t'^indent)
+				Base.print(io, "[")
 				printkey(io, ks)
-				Base.print(io,"]\n")
+				Base.print(io, "]\n")
 			end
 			# Use runtime dispatch here since the type of value seems not to be enforced other than as AbstractDict
 			@invokelatest print_table(f, io, value, ks; indent = indent + header, first_block = header, sorted, by, inline_tables)
@@ -210,10 +214,10 @@ function print_table(f::MbyFunc, io::IO, a::AbstractDict,
 			first_block = false
 			push!(ks, String(key))
 			for v in value
-				Base.print(io, ' '^4indent)
-				Base.print(io,"[[")
+				Base.print(io, '\t'^indent)
+				Base.print(io, "[[")
 				printkey(io, ks)
-				Base.print(io,"]]\n")
+				Base.print(io, "]]\n")
 				# TODO, nicer error here
 				!isa(v, AbstractDict) && error("array should contain only tables")
 				@invokelatest print_table(f, io, v, ks; indent = indent + 1, sorted, by, inline_tables)
@@ -228,7 +232,15 @@ end
 # API #
 #######
 
-print(f::MbyFunc, io::IO, a::AbstractDict; sorted::Bool=false, by=identity, inline_tables::IdSet{<:AbstractDict}=IdSet{Dict{String}}()) = print_table(f, io, a; sorted, by, inline_tables)
-print(f::MbyFunc,         a::AbstractDict; sorted::Bool=false, by=identity, inline_tables::IdSet{<:AbstractDict}=IdSet{Dict{String}}()) = print(f, stdout, a; sorted, by, inline_tables)
-print(io::IO, a::AbstractDict; sorted::Bool=false, by=identity, inline_tables::IdSet{<:AbstractDict}=IdSet{Dict{String}}()) = print_table(nothing, io, a; sorted, by, inline_tables)
-print(        a::AbstractDict; sorted::Bool=false, by=identity, inline_tables::IdSet{<:AbstractDict}=IdSet{Dict{String}}()) = print(nothing, stdout, a; sorted, by, inline_tables)
+print(f::MbyFunc, io::IO,
+	a::AbstractDict; sorted::Bool = false, by = identity,
+	inline_tables::IdSet{<:AbstractDict} = IdSet{Dict{String}}()) = print_table(f, io, a; sorted, by, inline_tables)
+print(f::MbyFunc,
+	a::AbstractDict; sorted::Bool = false, by = identity,
+	inline_tables::IdSet{<:AbstractDict} = IdSet{Dict{String}}()) = print(f, stdout, a; sorted, by, inline_tables)
+print(io::IO,
+	a::AbstractDict; sorted::Bool = false, by = identity,
+	inline_tables::IdSet{<:AbstractDict} = IdSet{Dict{String}}()) = print_table(nothing, io, a; sorted, by, inline_tables)
+print(
+	a::AbstractDict; sorted::Bool = false, by = identity,
+	inline_tables::IdSet{<:AbstractDict} = IdSet{Dict{String}}()) = print(nothing, stdout, a; sorted, by, inline_tables)

@@ -28,11 +28,11 @@ struct DateTime
 	time::Time
 end
 DateTime(y, m, d, h, mi, s, ms) =
-	DateTime(Date(y,m,d), Time(h, mi, s, ms))
+	DateTime(Date(y, m, d), Time(h, mi, s, ms))
 
 const EOF_CHAR = typemax(Char)
 
-const TOMLDict  = Dict{String, Any}
+const TOMLDict = Dict{String, Any}
 
 ##########
 # Parser #
@@ -89,26 +89,26 @@ mutable struct Parser{Dates}
 	Dates::Union{Module, Nothing} # TODO: remove once Pkg is updated
 end
 
-function Parser{Dates}(str::String; filepath=nothing) where {Dates}
+function Parser{Dates}(str::String; filepath = nothing) where Dates
 	root = TOMLDict()
 	l = Parser{Dates}(
-			str,                  # str
-			EOF_CHAR,             # current_char
-			firstindex(str),      # pos
-			0,                    # prevpos
-			0,                    # column
-			1,                    # line
-			0,                    # marker
-			root,                 # active_table
-			String[],             # dotted_keys
-			UnitRange{Int}[],     # chunks
-			IdSet{TOMLDict}(),    # inline_tables
-			IdSet{Any}(),         # static_arrays
-			IdSet{TOMLDict}(),    # defined_tables
-			root,
-			filepath,
-			nothing
-		)
+		str,                  # str
+		EOF_CHAR,             # current_char
+		firstindex(str),      # pos
+		0,                    # prevpos
+		0,                    # column
+		1,                    # line
+		0,                    # marker
+		root,                 # active_table
+		String[],             # dotted_keys
+		UnitRange{Int}[],     # chunks
+		IdSet{TOMLDict}(),    # inline_tables
+		IdSet{Any}(),         # static_arrays
+		IdSet{TOMLDict}(),    # defined_tables
+		root,
+		filepath,
+		nothing,
+	)
 	startup(l)
 	return l
 end
@@ -123,12 +123,12 @@ function startup(l::Parser)
 	end
 end
 
-Parser{Dates}() where {Dates} = Parser{Dates}("")
-Parser{Dates}(io::IO) where {Dates} = Parser{Dates}(read(io, String))
+Parser{Dates}() where Dates = Parser{Dates}("")
+Parser{Dates}(io::IO) where Dates = Parser{Dates}(read(io, String))
 
 # Parser(...) will be defined by TOML stdlib
 
-function reinit!(p::Parser, str::String; filepath::Union{Nothing, String}=nothing)
+function reinit!(p::Parser, str::String; filepath::Union{Nothing, String} = nothing)
 	p.str = str
 	p.current_char = EOF_CHAR
 	p.pos = firstindex(str)
@@ -265,15 +265,15 @@ mutable struct ParserError <: Exception
 	# Arbitrary data to store at the
 	# call site to be used when formatting
 	# the error
-	data
+	data::Any
 
 	# These are filled in before returning from parse function
-	str       ::Union{String,   Nothing}
-	filepath  ::Union{String,   Nothing}
-	line      ::Union{Int,      Nothing}
-	column    ::Union{Int,      Nothing}
-	pos       ::Union{Int,      Nothing} # position of parser when
-	table     ::Union{TOMLDict, Nothing} # result parsed until error
+	str      :: Union{String, Nothing}
+	filepath :: Union{String, Nothing}
+	line     :: Union{Int, Nothing}
+	column   :: Union{Int, Nothing}
+	pos      :: Union{Int, Nothing}      # position of parser when
+	table    :: Union{TOMLDict, Nothing} # result parsed until error
 end
 ParserError(type, data) = ParserError(type, data, nothing, nothing, nothing, nothing, nothing, nothing)
 ParserError(type) = ParserError(type, nothing)
@@ -309,7 +309,7 @@ function point_to_line(str::AbstractString, a::Int, b::Int, context)
 	io2 = IOContext(IOBuffer(), context)
 	while true
 		if a <= pos <= b
-			printstyled(io2, "^"; color=:light_green)
+			printstyled(io2, "^"; color = :light_green)
 		else
 			print(io2, " ")
 		end
@@ -323,10 +323,10 @@ function point_to_line(str::AbstractString, a::Int, b::Int, context)
 end
 
 function Base.showerror(io::IO, err::ParserError)
-	printstyled(io, "TOML Parser error:\n"; color=Base.error_color())
+	printstyled(io, "TOML Parser error:\n"; color = Base.error_color())
 	f = something(err.filepath, "none")
-	printstyled(io, f, ':', err.line, ':', err.column; bold=true)
-	printstyled(io, " error: "; color=Base.error_color())
+	printstyled(io, f, ':', err.line, ':', err.column; bold = true)
+	printstyled(io, " error: "; color = Base.error_color())
 	println(io, format_error_message_for_err_type(err))
 	# In this case we want the arrow to point one character
 	pos = err.pos::Int
@@ -386,7 +386,7 @@ end
 end
 
 # Return true if any character was accepted
-function accept_batch(l::Parser, f::F)::Bool where {F}
+function accept_batch(l::Parser, f::F)::Bool where F
 	ok = false
 	while accept(l, f)
 		ok = true
@@ -395,7 +395,7 @@ function accept_batch(l::Parser, f::F)::Bool where {F}
 end
 
 # Return true if `f` was accepted `n` times
-@inline function accept_n(l::Parser, n, f::F)::Bool where {F}
+@inline function accept_n(l::Parser, n, f::F)::Bool where F
 	for i in 1:n
 		if !accept(l, f)
 			return false
@@ -457,11 +457,11 @@ function tryparse(l::Parser)::Err{TOMLDict}
 		v = parse_toplevel(l)
 		if v isa ParserError
 			v.str      = l.str
-			v.pos      = l.prevpos-1
+			v.pos      = l.prevpos - 1
 			v.table    = l.root
 			v.filepath = l.filepath
 			v.line     = l.line
-			v.column   = l.column-1
+			v.column   = l.column - 1
 			return v
 		end
 	end
@@ -490,7 +490,7 @@ function parse_toplevel(l::Parser)::Err{Nothing}
 	end
 end
 
-function recurse_dict!(l::Parser, d::Dict, dotted_keys::AbstractVector{String}, check=true)::Err{TOMLDict}
+function recurse_dict!(l::Parser, d::Dict, dotted_keys::AbstractVector{String}, check = true)::Err{TOMLDict}
 	for i in 1:length(dotted_keys)
 		d = d::TOMLDict
 		key = dotted_keys[i]
@@ -503,7 +503,7 @@ function recurse_dict!(l::Parser, d::Dict, dotted_keys::AbstractVector{String}, 
 	return d::TOMLDict
 end
 
-function check_allowed_add_key(l::Parser, d, check_defined=true)::Err{Nothing}
+function check_allowed_add_key(l::Parser, d, check_defined = true)::Err{Nothing}
 	if !(d isa Dict)
 		return ParserError(ErrKeyAlreadyHasValue)
 	elseif d isa Dict && d in l.inline_tables
@@ -753,7 +753,7 @@ parse_nan(l::Parser) = accept(l, 'a') && accept(l, 'n') ? NaN : nothing
 function parse_bool(l::Parser, v::Bool)::Union{Bool, Nothing}
 	# Have eaten a 't' if `v` is true, otherwise have eaten a `f`.
 	v ? (accept(l, 'r') && accept(l, 'u') && accept(l, 'e') && return true) :
-		(accept(l, 'a') && accept(l, 'l') && accept(l, 's') && accept(l, 'e') && return false)
+	(accept(l, 'a') && accept(l, 'l') && accept(l, 's') && accept(l, 'e') && return false)
 	return nothing
 end
 
@@ -764,7 +764,7 @@ isvalid_binary(c::Char) = '0' <= c <= '1'
 const ValidSigs = Union{typeof.([isvalid_hex, isvalid_oct, isvalid_binary, isdigit])...}
 # This function eats things accepted by `f` but also allows eating `_` in between
 # digits. Returns if it ate at lest one character and if it ate an underscore
-function accept_batch_underscore(l::Parser, f::ValidSigs, fail_if_underscore=true)::Err{Tuple{Bool, Bool}}
+function accept_batch_underscore(l::Parser, f::ValidSigs, fail_if_underscore = true)::Err{Tuple{Bool, Bool}}
 	contains_underscore = false
 	at_least_one = false
 	last_underscore = false
@@ -875,7 +875,7 @@ function parse_number_or_date_start(l::Parser)
 	end
 	read_underscore |= contains_underscore
 	if accept(l, x -> x == 'e' || x == 'E')
-		accept(l, x-> x == '+' || x == '-')
+		accept(l, x -> x == '+' || x == '-')
 		# SPEC: (which follows the same rules as decimal integer values but may include leading zeros)
 		read_digit = accept_batch(l, isdigit)
 		ate, read_underscore = @try accept_batch_underscore(l, isdigit, !read_digit)
@@ -903,10 +903,10 @@ function parse_float(l::Parser, contains_underscore)::Err{Float64}
 	return v
 end
 
-function parse_int(l::Parser, contains_underscore, base=nothing)::Err{Int64}
+function parse_int(l::Parser, contains_underscore, base = nothing)::Err{Int64}
 	s = take_string_or_substring(l, contains_underscore)
 	v = try
-		Base.parse(Int64, s; base=base)
+		Base.parse(Int64, s; base = base)
 	catch e
 		e isa Base.OverflowError && return ParserError(ErrOverflowError)
 		rethrow()
@@ -914,12 +914,13 @@ function parse_int(l::Parser, contains_underscore, base=nothing)::Err{Int64}
 	return v
 end
 
-for (name, T1, T2, n1, n2) in (("integer", Int64,  Int128,  17,  33),
-							   ("hex", UInt64, UInt128, 18,  34),
-							   ("oct", UInt64, UInt128, 24,  45),
-							   ("bin", UInt64, UInt128, 66, 130),
-							   )
-	@eval function $(Symbol("parse_", name))(l::Parser, contains_underscore, base=nothing)::Err{Union{$(T1), $(T2), BigInt}}
+for (name, T1, T2, n1, n2) in (
+	("integer", Int64, Int128, 17, 33),
+	("hex", UInt64, UInt128, 18, 34),
+	("oct", UInt64, UInt128, 24, 45),
+	("bin", UInt64, UInt128, 66, 130),
+)
+	@eval function $(Symbol("parse_", name))(l::Parser, contains_underscore, base = nothing)::Err{Union{$(T1), $(T2), BigInt}}
 		s = take_string_or_substring(l, contains_underscore)
 		len = length(s)
 		v = try
@@ -944,7 +945,7 @@ end
 ##########################
 
 ok_end_value(c::Char) = iswhitespace(c) || c == '#' || c == EOF_CHAR || c == ']' ||
-							   c == '}' || c == ',' || c == '\n'     || c == '\r'
+						c == '}' || c == ',' || c == '\n' || c == '\r'
 
 #=
 # https://tools.ietf.org/html/rfc3339
@@ -971,7 +972,7 @@ ok_end_value(c::Char) = iswhitespace(c) || c == '#' || c == EOF_CHAR || c == ']'
 	date-time       = full-date "T" full-time
 =#
 
-accept_two(l, f::F) where {F} = accept_n(l, 2, f) || return(ParserError(ErrParsingDateTime))
+accept_two(l, f::F) where F = accept_n(l, 2, f) || return ParserError(ErrParsingDateTime)
 function parse_datetime(l)
 	# Year has already been eaten when we reach here
 	year = @try parse_int(l, false)
@@ -1075,7 +1076,7 @@ function try_return_time(p::Parser{Dates}, h, m, s, ms) where Dates
 	end
 end
 
-function _parse_local_time(l::Parser, skip_hour=false)::Err{NTuple{4, Int64}}
+function _parse_local_time(l::Parser, skip_hour = false)::Err{NTuple{4, Int64}}
 	# Hour has potentially been already parsed in
 	# `parse_number_or_date_start` already
 	if skip_hour
@@ -1143,10 +1144,10 @@ function parse_string_start(l::Parser, quoted::Bool)::Err{String}
 	return parse_string_continue(l, multiline, quoted)
 end
 
-@inline stop_candidates_multiline(x)         = x != '"'  &&  x != '\\'
-@inline stop_candidates_singleline(x)        = x != '"'  &&  x != '\\' && x != '\n'
-@inline stop_candidates_multiline_quoted(x)  = x != '\'' &&  x != '\\'
-@inline stop_candidates_singleline_quoted(x) = x != '\'' &&  x != '\\' && x != '\n'
+@inline stop_candidates_multiline(x)         = x != '\"' && x != '\\'
+@inline stop_candidates_singleline(x)        = x != '\"' && x != '\\' && x != '\n'
+@inline stop_candidates_multiline_quoted(x)  = x != '\'' && x != '\\'
+@inline stop_candidates_singleline_quoted(x) = x != '\'' && x != '\\' && x != '\n'
 
 function parse_string_continue(l::Parser, multiline::Bool, quoted::Bool)::Err{String}
 	start_chunk = l.prevpos
@@ -1182,7 +1183,7 @@ function parse_string_continue(l::Parser, multiline::Bool, quoted::Bool)::Err{St
 				start_chunk = l.prevpos
 			else
 				c = eat_char(l) # eat the escaped character
-				if c == 'u'  || c == 'U'
+				if c == 'u' || c == 'U'
 					n = c == 'u' ? 4 : 6
 					set_marker!(l)
 					if !accept_n(l, n, isvalid_hex)
@@ -1199,7 +1200,7 @@ function parse_string_continue(l::Parser, multiline::Bool, quoted::Bool)::Err{St
 					if !(codepoint <= 0xD7FF || 0xE000 <= codepoint <= 0x10FFFF)
 						return ParserError(ErrInvalidUnicodeScalar)
 					end
-				elseif c != 'b' && c != 't' && c != 'n' && c != 'f' && c != 'r' && c != '"' && c!= '\\'
+				elseif c != 'b' && c != 't' && c != 'n' && c != 'f' && c != 'r' && c != '"' && c != '\\'
 					return ParserError(ErrInvalidEscapeCharacter)
 				end
 				contains_backslash = true
@@ -1209,7 +1210,7 @@ function parse_string_continue(l::Parser, multiline::Bool, quoted::Bool)::Err{St
 end
 
 function take_chunks(l::Parser, unescape::Bool)::String
-	nbytes = sum(length, l.chunks; init=0)
+	nbytes = sum(length, l.chunks; init = 0)
 	str = Base._string_n(nbytes)
 	offset = 1
 	for chunk in l.chunks
