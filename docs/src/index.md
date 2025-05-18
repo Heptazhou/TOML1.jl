@@ -15,8 +15,8 @@ julia> data = """
        """;
 
 julia> TOML1.parse(data)
-Dict{String, Any} with 1 entry:
-  "database" => Dict{String, Any}("server"=>"192.168.1.1", "ports"=>[8001, 8001…
+OrderedDict{String, Any} with 1 entry:
+  "database" => OrderedDict{String, Any}("server"=>"192.168.1.1", "ports"=>[800…
 ```
 
 To parse a file, use [`TOML1.parsefile`](@ref). If the file has a syntax error,
@@ -81,7 +81,7 @@ julia> open(fname, "w") do io
        end
 
 julia> TOML1.parsefile(fname)
-Dict{String, Any} with 2 entries:
+OrderedDict{String, Any} with 2 entries:
   "names" => ["Julia", "Julio"]
   "age"   => [10, 20]
 ```

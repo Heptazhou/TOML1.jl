@@ -35,7 +35,7 @@ end
 
 const MbyFunc = Maybe{Function}
 const TOMLValue = Union{AbstractVector, AbstractDict, Bool, Integer, AbstractFloat, AbstractString,
-	Dates.DateTime, Dates.Time, Dates.Date, TOMLParser.DateTime, TOMLParser.Time, TOMLParser.Date}
+	Dates.DateTime, Dates.Time, Dates.Date, NamedTuple, Tuple, AbstractSet}
 
 
 ########
@@ -74,13 +74,16 @@ end
 # Values #
 ##########
 
+printvalue(f::Nothing, io::IO, nt::NamedTuple, sorted::Bool) = printvalue(f, io, pairs(nt), sorted)
+printvalue(f::Nothing, io::IO, symbol::Symbol, sorted::Bool) = printvalue(f, io, String(symbol), sorted)
+
 # Fallback
-function printvalue(f::MbyFunc, io::IO, value, sorted::Bool)
+function printvalue(f::MbyFunc, io::IO, value::Any, sorted::Bool)
 	toml_value = to_toml_value(f, value)
 	@invokelatest printvalue(f, io, toml_value, sorted)
 end
 
-function printvalue(f::MbyFunc, io::IO, value::AbstractVector, sorted::Bool)
+function printvalue(f::MbyFunc, io::IO, value::Union{AbstractSet, VecOrTup}, sorted::Bool)
 	Base.print(io, "[")
 	for (i, x) in enumerate(value)
 		i != 1 && Base.print(io, ", ")

@@ -12,6 +12,8 @@ include("toml_parser.jl")
 using Dates
 using Exts
 
+export OrderedDict
+
 module Internals
 # The parser is defined in Base
 	using ..TOMLParser: TOMLParser, Parser, parse, tryparse, ParserError, isvalid_barekey_char, reinit!

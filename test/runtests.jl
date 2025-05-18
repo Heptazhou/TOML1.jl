@@ -4,6 +4,7 @@ using Test
 using Dates
 
 using Base: IdSet
+using Exts
 using TOML1: TOML1 as TOML, parse, tryparse, ParserError, Internals, print
 
 function roundtrip(data)

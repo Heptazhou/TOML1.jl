@@ -13,7 +13,7 @@ using Exts
 
 const EOF_CHAR = typemax(Char)
 
-const TOMLDict = Dict{String, Any}
+const TOMLDict = ODict{String, Any}
 
 ##########
 # Parser #
@@ -199,7 +199,7 @@ end
 	ErrInvalidUnicodeScalar
 end
 
-const err_message = Dict(
+const err_message = ODict(
 	ErrTrailingCommaInlineTable             => "trailing comma not allowed in inline table",
 	ErrExpectedCommaBetweenItemsArray       => "expected comma between items in array",
 	ErrExpectedCommaBetweenItemsInlineTable => "expected comma between items in inline table",
@@ -469,7 +469,7 @@ function parse_toplevel(l::Parser)::Err{Nothing}
 	end
 end
 
-function recurse_dict!(l::Parser, d::Dict, dotted_keys::AbstractVector{String}, check = true)::Err{TOMLDict}
+function recurse_dict!(l::Parser, d::AbstractDict, dotted_keys::AbstractVector{String}, check = true)::Err{TOMLDict}
 	for i in 1:length(dotted_keys)
 		d = d::TOMLDict
 		key = dotted_keys[i]
@@ -483,9 +483,9 @@ function recurse_dict!(l::Parser, d::Dict, dotted_keys::AbstractVector{String}, 
 end
 
 function check_allowed_add_key(l::Parser, d, check_defined = true)::Err{Nothing}
-	if !(d isa Dict)
+	if !(d isa AbstractDict)
 		return ParserError(ErrKeyAlreadyHasValue)
-	elseif d isa Dict && d in l.inline_tables
+	elseif d in l.inline_tables
 		return ParserError(ErrAddKeyToInlineTable)
 	elseif check_defined && d in l.defined_tables
 		return ParserError(ErrDuplicatedKey)
@@ -551,7 +551,7 @@ function parse_entry(l::Parser, d)::Maybe{ParserError}
 	skip_ws(l)
 	value = @try parse_value(l)
 	# Not allowed to overwrite a value with an inline dict
-	if value isa Dict && haskey(d, last_key_part)
+	if value isa AbstractDict && haskey(d, last_key_part)
 		return ParserError(ErrInlineTableRedefine)
 	end
 	# TODO: Performance, hashing `last_key_part` again here

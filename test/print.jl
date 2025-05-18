@@ -1,7 +1,6 @@
 # This file is a part of Julia. License is MIT: https://julialang.org/license
 
-toml_str(a; kwargs...) = sprint(io -> TOML.print(io, a; kwargs...))
-toml_str(f, a; kwargs...) = sprint(io -> TOML.print(f, io, a; kwargs...))
+toml_str(xs...; kw...) = sprint(io -> TOML.print(io, xs...; kw...))
 
 @test toml_str(Dict("b" => 1, "c" => 2, "a" => 3); sorted = true) ==
 	  """
@@ -16,6 +15,28 @@ toml_str(f, a; kwargs...) = sprint(io -> TOML.print(f, io, a; kwargs...))
 	  ac = 2
 	  abc = 3
 	  """
+
+@testset "Set/Vec/Tup/NT" begin
+	@test toml_str(LDict(:a => OSet(1:3))) === """
+	a = [1, 2, 3]
+	"""
+
+	@test toml_str(LDict(:a => [1, 2, 3])) === """
+	a = [1, 2, 3]
+	"""
+
+	@test toml_str(LDict(:a => (1, 2, 3))) === """
+	a = [1, 2, 3]
+	"""
+
+	@test toml_str(LDict(:a => (:b, :cc))) === """
+	a = ["b", "cc"]
+	"""
+
+	@test toml_str(LDict(:a => (; x = 1))) === """
+	a = {x = 1}
+	"""
+end
 
 struct MyStruct
 	a::Int
@@ -58,7 +79,7 @@ end == toml_str(Dict("foo" => Dict(:bar => 1)); sorted = true)
 	[option]
 	"""
 	d = TOML.parse(s)
-	@test toml_str(d) == "user = \"me\"\n\n[julia]\n\n[option]\n" broken = VERSION ≥ v"1.13-0"
+	@test toml_str(d) == "user = \"me\"\n\n[julia]\n\n[option]\n"
 end
 
 @testset "special characters" begin
