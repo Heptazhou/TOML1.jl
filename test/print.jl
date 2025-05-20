@@ -1,6 +1,6 @@
 # This file is a part of Julia. License is MIT: https://julialang.org/license
 
-toml_str(xs...; kw...) = sprint(io -> TOML.print(io, xs...; kw...))
+using TOML1: toml as toml_str
 
 @test toml_str(Dict("b" => 1, "c" => 2, "a" => 3); sorted = true) ==
 	  """

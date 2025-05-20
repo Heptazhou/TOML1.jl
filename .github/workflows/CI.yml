@@ -14,7 +14,6 @@ defaults:
     shell: bash
 env:
   JULIA_NUM_THREADS: auto,auto
-  JULIA_PKG_USE_CLI_GIT: true
 jobs:
   test:
     runs-on: ${{ matrix.os }}

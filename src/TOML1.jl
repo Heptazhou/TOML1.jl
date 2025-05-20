@@ -139,6 +139,7 @@ pass the function `to_toml` that takes the data types and returns a value of a
 supported type.
 """
 const print = Internals.Printer.print
+const toml = Internals.Printer.toml
 
 #public Parser, parsefile, tryparsefile, parse, tryparse, ParserError, print
 

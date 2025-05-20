@@ -101,13 +101,14 @@ function printvalue(f::MbyFunc, io::IO, value::TOMLValue, sorted::Bool)
 	value isa Integer        ? print_integer(io, value) :  # Julia's own printing should be compatible with TOML on integers
 	value isa AbstractFloat  ? Base.print(io, isnan(value) ? "nan" :
 											  isinf(value) ? string(value > 0 ? "+" : "-", "inf") :
+											  isa(value, Union{Float16, Float32, Float64}) ? value :
 											  Float64(value)) :  # TOML specifies IEEE 754 binary64 for float
 	value isa AbstractString ? (qmark = Base.contains(value, "\n") ? "\"\"\"" : "\"";
 								Base.print(io, qmark);
 								print_toml_escaped(io, value);
 								Base.print(io, qmark)) :
 	value isa AbstractDict ? print_inline_table(f, io, value, sorted) :
-	error("internal error in TOML printing, unhandled value")
+	error("internal error in TOML printing, unhandled value of type $(typeof(value))")
 end
 #! format: on
 
@@ -247,3 +248,9 @@ print(io::IO,
 print(
 	a::AbstractDict; sorted::Bool = false, by = identity,
 	inline_tables::IdSet{<:AbstractDict} = IdSet{Dict{String}}()) = print(nothing, stdout, a; sorted, by, inline_tables)
+toml(f::MbyFunc,
+	a::AbstractDict; sorted::Bool = false, by = identity,
+	inline_tables::IdSet{<:AbstractDict} = IdSet{Dict{String}}()) = sprint(io -> print(f, io, a; sorted, by, inline_tables))
+toml(
+	a::AbstractDict; sorted::Bool = false, by = identity,
+	inline_tables::IdSet{<:AbstractDict} = IdSet{Dict{String}}()) = sprint(io -> print(nothing, io, a; sorted, by, inline_tables))
