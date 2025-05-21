@@ -122,6 +122,10 @@ end
 
 function print_inline_table(f::MbyFunc, io::IO, value::Union{AbstractDict, NamedTuple}, sorted::Bool)
 	vkeys = collect(keys(value))
+	if isempty(vkeys)
+		Base.print(io, "{}")
+		return
+	end
 	if sorted
 		sort!(vkeys)
 	end
@@ -134,6 +138,7 @@ function print_inline_table(f::MbyFunc, io::IO, value::Union{AbstractDict, Named
 		printvalue(f, io, v, sorted)
 	end
 	Base.print(io, " }")
+	return
 end
 
 
@@ -142,7 +147,7 @@ end
 ##########
 
 #! format: off
-is_table(value)           = isa(value, AbstractDict) || isa(value,  NamedTuple) && length(value) > 8
+is_table(value)           = isa(value, AbstractDict) && length(value) > 0 || isa(value, NamedTuple) && length(value) > 8
 is_array_of_tables(value) = isa(value, AbstractArray) &&
 							length(value) > 0 && (
 								isa(value, AbstractArray{<:AbstractDict}) ||
