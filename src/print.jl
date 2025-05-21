@@ -107,7 +107,7 @@ function printvalue(f::MbyFunc, io::IO, value::TOMLValue, sorted::Bool)
 								Base.print(io, qmark);
 								print_toml_escaped(io, value);
 								Base.print(io, qmark)) :
-	value isa AbstractDict ? print_inline_table(f, io, value, sorted) :
+	value isa Union{AbstractDict, NamedTuple} ? print_inline_table(f, io, value, sorted) :
 	error("internal error in TOML printing, unhandled value of type $(typeof(value))")
 end
 #! format: on
@@ -120,12 +120,12 @@ function print_integer(io::IO, value::Integer)
 	return
 end
 
-function print_inline_table(f::MbyFunc, io::IO, value::AbstractDict, sorted::Bool)
+function print_inline_table(f::MbyFunc, io::IO, value::Union{AbstractDict, NamedTuple}, sorted::Bool)
 	vkeys = collect(keys(value))
 	if sorted
 		sort!(vkeys)
 	end
-	Base.print(io, "{")
+	Base.print(io, "{ ")
 	for (i, k) in enumerate(vkeys)
 		v = value[k]
 		i != 1 && Base.print(io, ", ")
@@ -133,7 +133,7 @@ function print_inline_table(f::MbyFunc, io::IO, value::AbstractDict, sorted::Boo
 		Base.print(io, " = ")
 		printvalue(f, io, v, sorted)
 	end
-	Base.print(io, "}")
+	Base.print(io, " }")
 end
 
 
@@ -142,7 +142,7 @@ end
 ##########
 
 #! format: off
-is_table(value)           = isa(value, AbstractDict)
+is_table(value)           = isa(value, AbstractDict) || isa(value,  NamedTuple) && length(value) > 8
 is_array_of_tables(value) = isa(value, AbstractArray) &&
 							length(value) > 0 && (
 								isa(value, AbstractArray{<:AbstractDict}) ||
@@ -151,7 +151,7 @@ is_array_of_tables(value) = isa(value, AbstractArray) &&
 is_tabular(value)         = is_table(value) || @invokelatest(is_array_of_tables(value))
 #! format: on
 
-function print_table(f::MbyFunc, io::IO, a::AbstractDict,
+function print_table(f::MbyFunc, io::IO, a::Union{AbstractDict, NamedTuple},
 	ks::Vector{String} = String[];
 	indent::Int = 0,
 	first_block::Bool = true,
@@ -220,7 +220,7 @@ function print_table(f::MbyFunc, io::IO, a::AbstractDict,
 				printkey(io, ks)
 				Base.print(io, "]]\n")
 				# TODO, nicer error here
-				!isa(v, AbstractDict) && error("array should contain only tables")
+				!isa(v, Union{AbstractDict, NamedTuple}) && error("array should contain only tables")
 				@invokelatest print_table(f, io, v, ks; indent = indent + 1, sorted, by, inline_tables)
 			end
 			pop!(ks)
@@ -234,23 +234,23 @@ end
 #######
 
 print(io::IO, f::MbyFunc,
-	a::AbstractDict; sorted::Bool = false, by = identity,
-	inline_tables::IdSet{<:AbstractDict} = IdSet{Dict{String}}()) = print_table(f, io, a; sorted, by, inline_tables)
+	a::Union{AbstractDict, NamedTuple}; sorted::Bool = false, by = identity,
+	inline_tables::IdSet{<:Union{AbstractDict, NamedTuple}} = IdSet{Dict{String}}()) = print_table(f, io, a; sorted, by, inline_tables)
 print(f::MbyFunc, io::IO,
-	a::AbstractDict; sorted::Bool = false, by = identity,
-	inline_tables::IdSet{<:AbstractDict} = IdSet{Dict{String}}()) = print_table(f, io, a; sorted, by, inline_tables)
+	a::Union{AbstractDict, NamedTuple}; sorted::Bool = false, by = identity,
+	inline_tables::IdSet{<:Union{AbstractDict, NamedTuple}} = IdSet{Dict{String}}()) = print_table(f, io, a; sorted, by, inline_tables)
 print(f::MbyFunc,
-	a::AbstractDict; sorted::Bool = false, by = identity,
-	inline_tables::IdSet{<:AbstractDict} = IdSet{Dict{String}}()) = print(f, stdout, a; sorted, by, inline_tables)
+	a::Union{AbstractDict, NamedTuple}; sorted::Bool = false, by = identity,
+	inline_tables::IdSet{<:Union{AbstractDict, NamedTuple}} = IdSet{Dict{String}}()) = print(f, stdout, a; sorted, by, inline_tables)
 print(io::IO,
-	a::AbstractDict; sorted::Bool = false, by = identity,
-	inline_tables::IdSet{<:AbstractDict} = IdSet{Dict{String}}()) = print_table(nothing, io, a; sorted, by, inline_tables)
+	a::Union{AbstractDict, NamedTuple}; sorted::Bool = false, by = identity,
+	inline_tables::IdSet{<:Union{AbstractDict, NamedTuple}} = IdSet{Dict{String}}()) = print_table(nothing, io, a; sorted, by, inline_tables)
 print(
-	a::AbstractDict; sorted::Bool = false, by = identity,
-	inline_tables::IdSet{<:AbstractDict} = IdSet{Dict{String}}()) = print(nothing, stdout, a; sorted, by, inline_tables)
+	a::Union{AbstractDict, NamedTuple}; sorted::Bool = false, by = identity,
+	inline_tables::IdSet{<:Union{AbstractDict, NamedTuple}} = IdSet{Dict{String}}()) = print(nothing, stdout, a; sorted, by, inline_tables)
 toml(f::MbyFunc,
-	a::AbstractDict; sorted::Bool = false, by = identity,
-	inline_tables::IdSet{<:AbstractDict} = IdSet{Dict{String}}()) = sprint(io -> print(f, io, a; sorted, by, inline_tables))
+	a::Union{AbstractDict, NamedTuple}; sorted::Bool = false, by = identity,
+	inline_tables::IdSet{<:Union{AbstractDict, NamedTuple}} = IdSet{Dict{String}}()) = sprint(io -> print(f, io, a; sorted, by, inline_tables))
 toml(
-	a::AbstractDict; sorted::Bool = false, by = identity,
-	inline_tables::IdSet{<:AbstractDict} = IdSet{Dict{String}}()) = sprint(io -> print(nothing, io, a; sorted, by, inline_tables))
+	a::Union{AbstractDict, NamedTuple}; sorted::Bool = false, by = identity,
+	inline_tables::IdSet{<:Union{AbstractDict, NamedTuple}} = IdSet{Dict{String}}()) = sprint(io -> print(nothing, io, a; sorted, by, inline_tables))

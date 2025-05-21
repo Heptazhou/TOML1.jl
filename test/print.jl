@@ -34,7 +34,7 @@ using TOML1: toml as toml_str
 	"""
 
 	@test toml_str(LDict(:a => (; x = 1))) === """
-	a = {x = 1}
+	a = { x = 1 }
 	"""
 end
 
@@ -104,10 +104,10 @@ loaders = ["gzip", { driver = "csv", args = {delim = "\t"}}]
 @testset "dict/non-dict vec" begin
 	# https://github.com/JuliaLang/julia/issues/45340
 	d = Dict("b" => Any[111, Dict("a" => 222, "d" => 333)])
-	@test toml_str(d) == "b = [111, {a = 222, d = 333}]\n"
+	@test toml_str(d) == "b = [111, { a = 222, d = 333 }]\n"
 
 	d = Dict("b" => Any[Dict("a" => 222, "d" => 333), 111])
-	@test toml_str(d) == "b = [{a = 222, d = 333}, 111]\n"
+	@test toml_str(d) == "b = [{ a = 222, d = 333 }, 111]\n"
 
 	d = Dict("b" => Any[Dict("a" => 222, "d" => 333)])
 	@test toml_str(d) == """
@@ -121,7 +121,7 @@ loaders = ["gzip", { driver = "csv", args = {delim = "\t"}}]
 	@test toml_str(d) do x
 		x isa MyStruct && return Dict("a" => x.a)
 	end == """
-	b = [{a = 1}, {a = 2}]
+	b = [{ a = 1 }, { a = 2 }]
 	"""
 end
 
@@ -182,7 +182,7 @@ push!(inline_tables, inline_dict)
 @test toml_str(d; sorted = true, inline_tables) ==
 	  """
 	  x = "y"
-	  y = {a = [1, 2], b = {a = "b"}, c = "foo"}
+	  y = { a = [1, 2], b = { a = "b" }, c = "foo" }
 	  z = [1, 2, 3]
 	  """
 
@@ -205,8 +205,8 @@ push!(inline_tables, d["sources"]["Example"])
 	  LocalPkg = "fcf55292-0d03-4e8a-9e0b-701580031fc3"
 
 	  [sources]
-	  Example = {url = "https://github.com/JuliaLang/Example.jl"}
-	  LocalPkg = {path = "LocalPkg"}
+	  Example = { url = "https://github.com/JuliaLang/Example.jl" }
+	  LocalPkg = { path = "LocalPkg" }
 	  """
 
 inline_tables = IdSet{Dict}()
@@ -217,7 +217,7 @@ Example = "7876af07-990d-54b4-ab0e-23690620f79a"
 LocalPkg = "fcf55292-0d03-4e8a-9e0b-701580031fc3"
 
 [sources]
-LocalPkg = {path = "LocalPkg"}
+LocalPkg = { path = "LocalPkg" }
 
 	[sources.Example]
 	url = "https://github.com/JuliaLang/Example.jl"
@@ -229,7 +229,7 @@ LocalPkg = {path = "LocalPkg"}
 # https://github.com/JuliaLang/julia/pull/57584
 d = Dict("a" => 1, "b" => 2)
 inline_tables = IdSet{Dict}([d])
-s = "{a = 1, b = 2}"
+s = "{ a = 1, b = 2 }"
 @test toml_str(d; sorted = true, inline_tables) == s
 
 
